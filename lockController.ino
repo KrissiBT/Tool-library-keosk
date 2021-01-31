@@ -10,6 +10,7 @@ boolean newData = false;
 
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
+    pinMode(4, OUTPUT); //------------- Setup pin for unlocking locker
     Serial.begin(115200);
     //Serial.println("<Arduino is ready>");
 }
@@ -57,7 +58,7 @@ void getCommand() {
        commandPart1 = splitter->getItemAtIndex(0);
        commandPart2 = splitter->getItemAtIndex(1);
        //--- checking if the this lock should unlock else it should pass the command along
-       if (commandPart1 != commandPart2 && commandPart2 != "open") {
+       if (commandPart1 != commandPart2 && commandPart2 != "O") {
           //Serial.println("passing on to next lock");
           int increment = (commandPart2.toInt()) + 1;
           int id = commandPart1.toInt();
@@ -71,13 +72,36 @@ void getCommand() {
           Serial.print(">");
           
         }
+        //-------------------------- recived that a lock has been opened so pass it on 
+        if (commandPart1 != commandPart2 && commandPart2 == "O") {
+          //Serial.println("passing on to next lock");
+          int increment = (commandPart2.toInt()) + 1;
+          int id = commandPart1.toInt();
+          //-------------- serial write only wants chars or ints 
+          //Serial.print("< %i8 : %i8 >", id, increment); 
+          
+          Serial.print("<");
+          Serial.print(id);
+          Serial.print(":");
+          Serial.print("O");
+          Serial.print(">");
+          
+        }
         //----- unlock the lock and pass on unlocked messange
-        else{
+        if (commandPart1 == commandPart2){
+          int id = commandPart1.toInt();
           //Serial.println("hey thats me");
           digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on (HIGH is the voltage level)
-          delay(1000);                       // wait for a second
+          digitalWrite(4,HIGH);
+          delay(3000);                       // wait for a second
           digitalWrite(LED_BUILTIN, LOW);    // turn the LED off by making the voltage LOW
-          delay(1000); 
+          digitalWrite(4,LOW);
+          delay(3000); 
+          Serial.print("<");
+          Serial.print(id);
+          Serial.print(":");
+          Serial.print("O");
+          Serial.print(">");
         }
 
        
@@ -91,7 +115,7 @@ void getCommand() {
   //-------- function that pulls in new characters and verifies that they arent old 
 void showNewData() {
     if (newData == true) {
-      Serial.println(receivedChar);
+      //Serial.println(receivedChar);
         newData = false;
     }
 }
